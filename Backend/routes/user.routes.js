@@ -6,14 +6,14 @@ import {authToken} from "../middleware/auth.js";
 const router = Router();
 
 router.post('/register',
-    body('name').notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Invalid email address'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('name').notEmpty().withMessage('Name is required').trim(),
+    body('email').isEmail().withMessage('Invalid email address').normalizeEmail(),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long').trim(),
     createUser);
 
 router.post('/login',
-    body('email').isEmail().withMessage('Invalid email address'),
-    body('password').notEmpty().withMessage('Password is required'),
+    body('email').isEmail().withMessage('Invalid email address').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required').trim(),
     loginUser
 )
 

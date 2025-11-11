@@ -36,6 +36,13 @@ const createUser = async(req,res)=>{
 }
 
 const loginUser = async(req,res)=>{
+     
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+
     const {email,password} = req.body;
     
     if(!email || !password){
@@ -58,8 +65,8 @@ const loginUser = async(req,res)=>{
             id: user._id
         }
 
-       const token = await generateToken(payload);
-       await setTokenCookie(res, token);
+       const token = generateToken(payload);
+        setTokenCookie(res, token);
        console.log(token);
        
      return res.status(200).json({message:"Login successful", userId:user._id});

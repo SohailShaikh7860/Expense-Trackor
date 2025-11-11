@@ -71,10 +71,10 @@ const tripeExpensesSchema = new Schema({
 },
 {
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  toObject: { virtuals: true },
+  timestamps:true
 },
 
-{timestamps:true}
 )
 
 tripeExpensesSchema.virtual("driverAllowance.remaining").get(function() {
