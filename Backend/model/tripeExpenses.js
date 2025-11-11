@@ -1,4 +1,4 @@
-import {Schema} from "mongoose";
+import mongoose, {Schema} from "mongoose";
 
 const tripeExpensesSchema = new Schema({
     Vehicle_Number:{
@@ -18,13 +18,13 @@ const tripeExpensesSchema = new Schema({
         required:true
     },
     fuelCost:{
-        type:String,
+        type:Number,
         default:0
     },
     driverAllowance:{
         totalSalary:{
             type:Number,
-            default:0
+            default:7000
         },
         bonus:{
             type:Number,
@@ -39,6 +39,10 @@ const tripeExpensesSchema = new Schema({
         type:Number,
         default:0
     },
+    paidTransport:{
+        type:Number,
+        default:0
+    },
     maintenanceCost:{
         type:Number,
         default:0
@@ -47,7 +51,7 @@ const tripeExpensesSchema = new Schema({
         type:Number,
         default:0
     },
-    kamishan:{
+    commission:{
         type:Number,
         default:0
     },
@@ -64,7 +68,31 @@ const tripeExpensesSchema = new Schema({
         type:Date,
         default:Date.now
     }
-})
+},
+{
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+},
+
+{timestamps:true}
+)
+
+tripeExpensesSchema.virtual("driverAllowance.remaining").get(function() {
+  return this.driverAllowance.totalSalary + this.driverAllowance.bonus - this.driverAllowance.paid;
+});
+
+tripeExpensesSchema.virtual("netProfit").get(function() {
+  const totalExpense =
+    this.fuelCost +
+    this.hamaali +
+    this.maintenanceCost +
+    this.otherExpenses +
+    this.commission +
+    this.driverAllowance.paid +
+    this.paidTransport;
+  return this.totalIncome - totalExpense;
+});
+
 
 const TripExpenses = mongoose.model("TripExpenses", tripeExpensesSchema);
 export default TripExpenses;
