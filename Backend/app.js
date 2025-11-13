@@ -6,10 +6,13 @@ import cors from 'cors';
 
 const app = express();
 
+const originalUrl = process.env.FRONTEND || 'http://localhost:5173';
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
+    origin: originalUrl,
     credentials: true,
 }));
 
