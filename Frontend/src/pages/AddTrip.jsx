@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTrip } from '../context/TripContext'
+import { Upload, X, Image as ImageIcon } from 'lucide-react'
 
 const AddTrips = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const {addTrip} = useTrip();
+  const {addTrip, uploadReceipts} = useTrip();
+
+  const [receiptFiles, setReceiptFiles] = useState([])
+  const [receiptPreviews, setReceiptPreviews] = useState([])
 
   const [formData, setFormData] = useState({
     Vehicle_Number: '',
@@ -51,6 +55,39 @@ const AddTrips = () => {
     }
   }
 
+  const handleReceiptChange = (e)=>{
+    const files = Array.from(e.target.files);
+
+    const validFiles = files.filter(file=>{
+      if(file.size > 5 * 1024 * 1024){ 
+        alert(`File ${file.name} exceeds the 5MB size limit and will be skipped.`)
+        return false;
+      }
+      return true;
+    })
+
+    if (validFiles.length > 0) {
+      setReceiptFiles([...receiptFiles, ...validFiles])
+      
+
+      validFiles.forEach(file => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setReceiptPreviews(prev => [...prev, reader.result])
+        }
+        reader.readAsDataURL(file)
+      })
+      
+      setError('')
+    }
+
+  }
+
+  const handleRemoveReceipt = (index) => {
+    setReceiptFiles(receiptFiles.filter((_, i) => i !== index))
+    setReceiptPreviews(receiptPreviews.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -65,7 +102,8 @@ const AddTrips = () => {
       maintenanceCost: Number(formData.maintenanceCost) || 0,
       otherExpenses: Number(formData.otherExpenses) || 0,
       commission: Number(formData.commission) || 0,
-      pendingAmount: Number(formData.pendingAmount) || 0
+      pendingAmount: Number(formData.pendingAmount) || 0,
+      phonePai: Number(formData.phonePai) || 0,
     };
 
     try {
@@ -74,6 +112,12 @@ const AddTrips = () => {
       console.log('Trip created:', result)
       
       if (result.success) {
+        const tripId = result.data?.tripExpense?._id;
+        console.log('Trip Id is', tripId);
+        
+        if (receiptFiles.length > 0 && tripId) {
+          await handleUploadReceipts(tripId)
+        }
         setSuccess('Trip added successfully!')
         
         setTimeout(() => {
@@ -91,10 +135,29 @@ const AddTrips = () => {
     }
   }
 
+   const handleUploadReceipts = async (tripId) => {
+    try {
+     
+      for (const file of receiptFiles) {
+        const uploadResult = await uploadReceipts(tripId,file);
+        console.log("Receipt upload result",uploadResult);
+        
+        if(!uploadResult.success){
+          setError(uploadResult.message || 'Failed to upload some receipts')
+        }
+
+      }      
+      }
+     catch (error) {
+      console.error('Receipt upload error:', error)
+    }
+  }
+
+
   return (
     <div className='min-h-screen bg-stone-100 p-4 md:p-8'>
       <div className='max-w-5xl mx-auto'>
-        
+
         <div className='flex justify-between items-center mb-8'>
           <h1 className='text-3xl md:text-5xl font-black uppercase tracking-tight border-b-4 border-black inline-block pb-2 bg-yellow-400 px-4 transform -rotate-1'>
             Add New Trip
@@ -107,7 +170,7 @@ const AddTrips = () => {
           </button>
         </div>
 
-        
+
         {error && (
           <div className='mb-6 p-4 bg-red-500 border-4 border-black text-white font-bold uppercase text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'>
             {error}
@@ -120,18 +183,18 @@ const AddTrips = () => {
           </div>
         )}
 
-        
+
         <form onSubmit={handleSubmit} className='bg-white border-8 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'>
-          
-          
+
+
           <div className='bg-yellow-400 border-b-4 border-black p-4'>
             <h2 className='text-xl md:text-2xl font-black uppercase'>
               📋 Basic Information
             </h2>
           </div>
-          
+
           <div className='p-6 space-y-6'>
-            
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
@@ -144,8 +207,7 @@ const AddTrips = () => {
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow uppercase'
                   placeholder='MH20B0000'
-                  required
-                />
+                  required />
               </div>
 
               <div>
@@ -159,12 +221,11 @@ const AddTrips = () => {
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
                   placeholder='Route'
-                  required
-                />
+                  required />
               </div>
             </div>
 
-            
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
@@ -176,8 +237,7 @@ const AddTrips = () => {
                   value={formData.monthAndYear}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  required
-                />
+                  required />
               </div>
 
               <div>
@@ -191,13 +251,12 @@ const AddTrips = () => {
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
                   placeholder='0'
-                  required
-                />
+                  required />
               </div>
             </div>
           </div>
 
-          
+
           <div className='bg-red-400 border-t-4 border-b-4 border-black p-4'>
             <h2 className='text-xl md:text-2xl font-black uppercase'>
               💰 Expenses
@@ -205,7 +264,7 @@ const AddTrips = () => {
           </div>
 
           <div className='p-6 space-y-6'>
-            
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
@@ -217,8 +276,7 @@ const AddTrips = () => {
                   value={formData.fuelCost}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
 
               <div>
@@ -231,12 +289,11 @@ const AddTrips = () => {
                   value={formData.hamaali}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
             </div>
 
-            
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
@@ -248,8 +305,7 @@ const AddTrips = () => {
                   value={formData.paidTransport}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
 
               <div>
@@ -262,12 +318,11 @@ const AddTrips = () => {
                   value={formData.maintenanceCost}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
             </div>
 
-            
+
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
@@ -279,8 +334,7 @@ const AddTrips = () => {
                   value={formData.commission}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
 
               <div>
@@ -293,13 +347,12 @@ const AddTrips = () => {
                   value={formData.otherExpenses}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
             </div>
           </div>
 
-          
+
           <div className='bg-green-400 border-t-4 border-b-4 border-black p-4'>
             <h2 className='text-xl md:text-2xl font-black uppercase'>
               👨‍✈️ Driver Allowance
@@ -318,8 +371,7 @@ const AddTrips = () => {
                   value={formData.driverAllowance.totalSalary}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='7000'
-                />
+                  placeholder='7000' />
               </div>
 
               <div>
@@ -332,8 +384,7 @@ const AddTrips = () => {
                   value={formData.driverAllowance.bonus}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
 
               <div>
@@ -346,12 +397,11 @@ const AddTrips = () => {
                   value={formData.driverAllowance.paid}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
             </div>
 
-            
+
             <div className='bg-yellow-400 border-4 border-black p-4'>
               <p className='font-black uppercase text-sm'>
                 Remaining Driver Payment: ₹
@@ -360,7 +410,7 @@ const AddTrips = () => {
             </div>
           </div>
 
-          
+
           <div className='bg-orange-400 border-t-4 border-b-4 border-black p-4'>
             <h2 className='text-xl md:text-2xl font-black uppercase'>
               📊 Payment Status
@@ -379,8 +429,7 @@ const AddTrips = () => {
                   value={formData.pendingAmount}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
-                  placeholder='0'
-                />
+                  placeholder='0' />
               </div>
 
               <div>
@@ -397,10 +446,84 @@ const AddTrips = () => {
                   <option value='Cleared'>Cleared</option>
                 </select>
               </div>
+              <div>
+                <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
+                  Phone Pai
+                </label>
+                <input type="number"
+                  name='phonePai'
+                  value={formData.phonePai}
+                  onChange={handleChange}
+                  className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
+                  placeholder='0' />
+              </div>
             </div>
           </div>
 
-          
+          {/* Receipt Upload Section */}
+          <div className='bg-purple-400 border-t-4 border-b-4 border-black p-4'>
+            <h2 className='text-xl md:text-2xl font-black uppercase'>
+              📸 Payment Receipts
+            </h2>
+          </div>
+
+          <div className='p-6 space-y-6'>
+            <div className='border-4 border-black p-6 bg-purple-50'>
+              <label className='font-black uppercase text-sm mb-4 flex items-center gap-2'>
+                <Upload size={18} strokeWidth={3} />
+                Upload Payment Receipts (Optional)
+              </label>
+
+              <div className='mb-4'>
+                <label className='block'>
+                  <div className='border-4 border-black p-6 text-center cursor-pointer hover:bg-yellow-400 transition-colors bg-white'>
+                    <input
+                      type='file'
+                      accept='image/*,.pdf'
+                      multiple
+                      onChange={handleReceiptChange}
+                      className='hidden' />
+                    <ImageIcon size={40} className='mx-auto mb-2' strokeWidth={2} />
+                    <p className='font-bold uppercase text-sm'>
+                      Click to upload receipts
+                    </p>
+                    <p className='text-xs font-bold text-gray-600 mt-1'>
+                      JPG, PNG, PDF (Max 5MB each)
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Receipt Previews */}
+              {receiptPreviews.length > 0 && (
+                <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
+                  {receiptPreviews.map((preview, index) => (
+                    <div key={index} className='relative border-4 border-black bg-white'>
+                      <button
+                        type='button'
+                        onClick={() => handleRemoveReceipt(index)}
+                        className='absolute -top-2 -right-2 bg-red-400 border-2 border-black p-1 hover:bg-black hover:text-red-400 transition-colors z-10'
+                      >
+                        <X size={16} strokeWidth={3} />
+                      </button>
+                      <img
+                        src={preview}
+                        alt={`Receipt ${index + 1}`}
+                        className='w-full h-24 object-cover' />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {receiptPreviews.length > 0 && (
+                <p className='text-xs font-bold text-gray-600 mt-3'>
+                  {receiptPreviews.length} receipt(s) selected
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <div className='border-t-4 border-black p-6 bg-stone-50'>
             <button
               type='submit'

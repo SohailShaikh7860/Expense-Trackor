@@ -76,7 +76,58 @@ export const TripProvider = ({children}) => {
     }
   }
 
-  // Calculate statistics from trips data
+  const uploadReceipts = async (tripId,file) => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      // Assuming 'receipts' is an array of File objects to be uploaded
+      formData.append('receipt', file);
+      const response = await axios.post(`/trip/${tripId}/receipt`,formData,{
+        headers:{
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || 'Failed to upload receipts' };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const deleteReceipt = async (tripId, receiptId) => {
+       try {
+        setLoading(true);
+        const response = await axios.delete(`/trip/${tripId}/receipt/${receiptId}`);
+        return { success: true, data: response.data };
+       } catch (error) {
+        return { success: false, message: error.response?.data?.message || 'Failed to delete receipt' };
+       } finally {
+        setLoading(false);
+       }
+  }
+
+  const getReceipts = async (tripId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/trip/${tripId}/receipts`);
+      return { 
+        success: true, 
+        receipts: response.data.receipts || [] 
+      };
+    } catch (error) {
+      console.error('Get receipts error:', error);
+      return { 
+        success: false, 
+        receipts: [],
+        message: error.response?.data?.message || 'Failed to get receipts'
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+ 
 const calculateStats = (tripsData) => {
   const totalTrips = tripsData.length;
   
@@ -121,7 +172,10 @@ const calculateStats = (tripsData) => {
     fetchTrips,
     tripStats,
     updateTrips,
-    deleteTrip
+    deleteTrip,
+    uploadReceipts,
+    deleteReceipt,
+    getReceipts,
   }
 
   return (

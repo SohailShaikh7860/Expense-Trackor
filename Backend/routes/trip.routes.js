@@ -139,8 +139,8 @@ router.get("/trip-expense/:id", authToken, getTripExpenses);
 router.get("/trip-expenses", authToken, getAllTripExpenses);
 
 
-//upload receipt routes
-router.post('/trip/:id/receipt', upload.single('receipt'), uploadRecipt);
-router.delete('/trip/:id/receipt/:receiptId', deleteRecipt);
-router.get('/trip/:id/receipts', getReceipts);
+
+router.post('/:id/receipt', upload.single('receipt'), uploadRecipt);
+router.delete('/:id/receipt/:receiptId', deleteRecipt);
+router.get('/:id/receipts', getReceipts);
 export default router;

@@ -162,6 +162,8 @@ const deleteTrip = async(req,res)=>{
 
 const uploadRecipt = async(req,res)=>{
     try {
+      
+       
       const {id} = req.params;
       if(!req.file){
         return res.status(400).json({message:"No file uploaded"});
@@ -169,8 +171,12 @@ const uploadRecipt = async(req,res)=>{
 
       const trip = await TripExpenses.findById(id);
       if(!trip){
+         await cloudinary.uploader.destroy(req.file.filename);
         return res.status(404).json({message:"Trip expense not found"});
       }
+
+            console.log('Available properties:', Object.keys(req.file));
+
 
       trip.receipts.push({
         url: req.file.path,

@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'trip_images',
-        allowedFormats: ['jpg', 'png', 'jpeg'],
+        allowed_formats: ['jpg', 'png', 'jpeg'],
         transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
     }
 })

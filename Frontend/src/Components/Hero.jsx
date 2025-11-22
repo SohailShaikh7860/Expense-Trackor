@@ -74,7 +74,7 @@ const Hero = () => {
             </p>
           </div>
 
-          <div className="border-2 border-black p-8 bg-pink-400 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all">
+          <div className="border-2 border-black p-8 bg-red-400 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all">
             <div className="text-5xl mb-4">📱</div>
             <h3 className="font-black text-xl uppercase mb-3 leading-tight">
               Export to PDF

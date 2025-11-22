@@ -20,7 +20,7 @@ app.use(cors({
 app.get('/', (req, res) => {
   res.send('Expense Tracker Backend is running');
 });
-app.use(express.text({ type: ['text/*'] }));
+// app.use(express.text({ type: ['text/*'] })); // Commented out - was interfering with JSON body parsing
 
 app.use('/user', router);
 app.use('/trip', tripRouter);

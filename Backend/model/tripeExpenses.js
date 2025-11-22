@@ -1,5 +1,4 @@
 import mongoose, {Schema} from "mongoose";
-import { upload } from "../utils/cloudinary.js";
 
 const tripeExpensesSchema = new Schema({
     Vehicle_Number:{

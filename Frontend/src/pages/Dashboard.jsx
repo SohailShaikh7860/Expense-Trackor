@@ -47,7 +47,7 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+        <div className="flex items-center gap-7 w-full md:w-auto justify-end">
          
           {user && (
             <div className="relative">

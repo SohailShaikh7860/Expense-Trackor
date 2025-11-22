@@ -36,7 +36,15 @@ const Login = () => {
   }
 
   return (
-    <div className='flex justify-center items-center min-h-[calc(100vh-120px)] px-4 py-12 bg-stone-100 h-screen'>
+        <div className='min-h-screen bg-stone-100'>
+      <div className='p-4'>
+        <Link to='/'>
+          <h1 className='font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-black rounded-2xl bg-yellow-400 inline-block px-2 py-1 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer'>
+            ExpenseFlow
+          </h1>
+        </Link>
+      </div>
+    <div className='flex justify-center items-center  px-4 py-6 md:py-8 bg-stone-100'>
       <form className='flex flex-col w-full max-w-md p-6 md:p-6 border-8 border-black bg-yellow-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]' >
         <h2 className='text-2xl md:text-3xl font-black uppercase text-center mb-5 border-b-4 border-black pb-3'>Login to ExpenseFlow</h2>
 
@@ -93,6 +101,7 @@ const Login = () => {
         
       </form>
     </div>
+     </div> 
   )
 }
 

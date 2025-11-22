@@ -368,9 +368,9 @@ const View = () => {
                 style={{ backgroundColor: "#fb923c" }}
               >
                 <p className="text-xs font-black uppercase mb-2">
-                  Payment Status
+                  PhonePai Amount
                 </p>
-                <p className="text-2xl font-black">{trip.paymentStatus}</p>
+                <p className="text-2xl font-black">₹{(trip.phonePai || 0).toLocaleString("en-IN")}</p>
               </div>
 
               <div
