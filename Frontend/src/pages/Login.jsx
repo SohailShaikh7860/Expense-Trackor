@@ -25,6 +25,7 @@ const Login = () => {
     }
 
     try {
+      console.log('🔍 Base URL being used:', import.meta.env.VITE_API_URL);
       const formData = await login(email, password);
       console.log(formData);
       navigate('/dashboard');
