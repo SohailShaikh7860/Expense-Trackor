@@ -18,7 +18,7 @@ export const TripProvider = ({children}) => {
        try {
           setLoading(true);
           const response = await axios.post('/trip/trip-expense', tripData);
-          setTrips([response.data.tripExpense, ...trips]);
+          await fetchTrips();
           return { success: true, data: response.data };
        } catch (error) {
           console.error("Add trip error:", error);

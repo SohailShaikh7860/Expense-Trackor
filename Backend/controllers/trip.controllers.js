@@ -3,15 +3,18 @@ import { validationResult } from "express-validator";
 import { cloudinary } from "../utils/cloudinary.js";
 
 const createTripExpense = async(req,res)=>{
- 
-        console.log('CREATE TRIP BODY:', req.method, req.originalUrl, req.headers['content-type'], req.body);
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    let {Vehicle_Number, route, monthAndYear, totalIncome, fuelCost, driverAllowance, hamaali, paidTransport, maintenanceCost, otherExpenses, commission, pendingAmount, paymentStatus,phonePai} = req.body;
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({message: "Authentication required"});
+    }
+
+    const userId = req.user.id;
+
+    let {Vehicle_Number, route, monthAndYear, totalIncome, fuelCost, driverAllowance, hamaali, paidTransport, maintenanceCost, otherExpenses, commission, pendingAmount, paymentStatus, phonePai} = req.body;
 
     Vehicle_Number = Vehicle_Number?.trim().toString().toUpperCase();
     route = route?.trim().toString();
@@ -20,6 +23,7 @@ const createTripExpense = async(req,res)=>{
 
     try {
         const tripExpense = await TripExpenses.create({
+            userId,
             Vehicle_Number,
             route,
             monthAndYear,
@@ -43,8 +47,7 @@ const createTripExpense = async(req,res)=>{
 
         return res.status(201).json({message:"Trip expense created successfully", tripExpense});
     } catch (error) {
-        console.log("Error",error.message);
-        return res.status(500).json({message:"Internal server error"});
+        return res.status(500).json({message:"Internal server error", error: error.message});
     }
 }
 
@@ -52,7 +55,8 @@ const getTripExpenses = async(req,res)=>{
     const {id}= req.params;
 
     try {
-        const trip = await TripExpenses.findById(id).lean({ virtuals: true });
+        const userId = req.user.id;
+        const trip = await TripExpenses.findOne({ _id: id, userId }).lean({ virtuals: true });
         if(!trip){
             return res.status(404).json({message:"Trip expense not found"});
         }
@@ -65,7 +69,8 @@ const getTripExpenses = async(req,res)=>{
 
 const getAllTripExpenses = async(req,res)=>{
     try {
-        const trips = await TripExpenses.find().sort({createdAt: -1});
+        const userId = req.user.id;
+        const trips = await TripExpenses.find({ userId }).sort({createdAt: -1});
         return res.status(200).json({trips, count: trips.length});
     } catch (error) {
         console.error('Get trips error:',error);
@@ -124,8 +129,9 @@ const updateTrips = async (req, res) => {
   }
 
   try {
-    const updatedTrip = await TripExpenses.findByIdAndUpdate(
-      id,
+    const userId = req.user.id;
+    const updatedTrip = await TripExpenses.findOneAndUpdate(
+      { _id: id, userId }, 
       updates,
       { new: true, runValidators: true }
     ).lean({ virtuals: true });
@@ -149,7 +155,8 @@ const deleteTrip = async(req,res)=>{
     const {id}= req.params;
 
     try {
-        const deletTrip = await TripExpenses.findByIdAndDelete(id);
+        const userId = req.user.id;
+        const deletTrip = await TripExpenses.findOneAndDelete({ _id: id, userId });
         if(!deletTrip){
             return res.status(404).json({message:"Trip expense not found"});
         }
@@ -162,14 +169,13 @@ const deleteTrip = async(req,res)=>{
 
 const uploadRecipt = async(req,res)=>{
     try {
-      
-       
       const {id} = req.params;
       if(!req.file){
         return res.status(400).json({message:"No file uploaded"});
       }
 
-      const trip = await TripExpenses.findById(id);
+      const userId = req.user.id;
+      const trip = await TripExpenses.findOne({ _id: id, userId });
       if(!trip){
          await cloudinary.uploader.destroy(req.file.filename);
         return res.status(404).json({message:"Trip expense not found"});
@@ -195,7 +201,8 @@ const deleteRecipt = async(req,res)=>{
     try {
       const {id, receiptId} = req.params;
 
-      const trip = await TripExpenses.findById(id);
+      const userId = req.user.id;
+      const trip = await TripExpenses.findOne({ _id: id, userId });
       if(!trip){
         return res.status(404).json({message:"Trip expense not found"});
       }
@@ -221,7 +228,8 @@ const deleteRecipt = async(req,res)=>{
   try {
     const { id } = req.params;
 
-    const trip = await TripExpenses.findById(id).select('receipts');
+    const userId = req.user.id;
+    const trip = await TripExpenses.findOne({ _id: id, userId }).select('receipts');
     if (!trip) {
       return res.status(404).json({ message: 'Trip not found' });
     }

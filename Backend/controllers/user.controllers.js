@@ -8,7 +8,7 @@ import crypto from "crypto";
 const createUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // Return all validation errors
+    
     return res.status(400).json({ errors: errors.array() });
   }
 
@@ -25,7 +25,7 @@ const createUser = async (req, res) => {
     }
 
     const user = await User.create({ name, email, password });
-    // await user.save();
+    await user.save();
 
     return res
       .status(201)

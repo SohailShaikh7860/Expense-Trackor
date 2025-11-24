@@ -1,6 +1,11 @@
 import mongoose, {Schema} from "mongoose";
 
 const tripeExpensesSchema = new Schema({
+    userId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User",
+        required:true
+    },
     Vehicle_Number:{
         type:String,
         required:true
