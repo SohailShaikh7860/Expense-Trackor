@@ -6,5 +6,7 @@ import SignUp from "./SignUp";
 import AddTrip from "./AddTrip";
 import EditTrip from "./EditTrip";
 import View from "./View";
+import SupportButton from "./SupportButton";
+import Supporters from "./SupportPage";
 
-export { Login, Home, Dashboard, ForgotPage, SignUp, AddTrip, EditTrip, View };
+export { Login, Home, Dashboard, ForgotPage, SignUp, AddTrip, EditTrip, View, SupportButton, Supporters };

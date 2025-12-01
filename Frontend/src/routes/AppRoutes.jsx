@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Login, Home, Dashboard, ForgotPage, SignUp,AddTrip, View, EditTrip } from "../pages/pages.js";
+import { Login, Home, Dashboard, ForgotPage, SignUp,AddTrip, View, EditTrip, Supporters } from "../pages/pages.js";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 const AppRoutes = () => {
@@ -49,6 +49,10 @@ const AppRoutes = () => {
           </ProtectedRoute>
          }
         />
+
+        <Route path='/supporters' element={
+            <Supporters />
+        }/>
       </Routes>
     </div>
   );

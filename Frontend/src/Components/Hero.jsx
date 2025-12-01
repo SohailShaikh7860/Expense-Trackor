@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import {SupportButton} from '../pages/pages';
 const Hero = () => {
   return (
     <>
@@ -185,7 +186,7 @@ const Hero = () => {
       </div>
 
       <div className="mb-6">
-        <span className="font-black text-5xl">₹99</span>
+        <span className="font-black text-5xl">₹49</span>
         <span className="font-bold text-lg ml-2">/ one-time</span>
       </div>
 
@@ -226,9 +227,7 @@ const Hero = () => {
         </li>
       </ul>
 
-      <button className="w-full font-black text-lg uppercase text-yellow-400 bg-black border-4 border-black py-3 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-        Support the Project
-      </button>
+      <SupportButton />
     </div>
   </div>
 
