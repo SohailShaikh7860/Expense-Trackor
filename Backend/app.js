@@ -1,6 +1,7 @@
 import express from 'express';
 import router from './routes/user.routes.js';  
 import tripRouter from './routes/trip.routes.js';
+import razorpayRouter from './routes/razorpay.Route.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
@@ -41,5 +42,6 @@ app.get('/', (req, res) => {
 
 app.use('/user', router);
 app.use('/trip', tripRouter);
+app.use('/razorpay', razorpayRouter);
 
 export default app;
