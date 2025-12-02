@@ -23,6 +23,11 @@ const userSchema = new Schema({
     resetOtpExpiry:{
         type:Number,
         default:0
+    },
+    userType:{
+        type:String,
+        enum:['transport','Simple User'],
+        default:'Simple User'
     }
 },{timestamps:true});
 

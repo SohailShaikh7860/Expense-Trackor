@@ -1,6 +1,6 @@
 import mongoose, {Schema} from "mongoose";
 
-const razorSchema = Schema({
+const razorSchema = new Schema({
     userId:{
       type:mongoose.Schema.Types.ObjectId,
         ref:'User',
