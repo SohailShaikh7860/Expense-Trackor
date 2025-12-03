@@ -12,10 +12,10 @@ const createUser = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, password } = req.body;
+  const { name, email, password, userType } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
+  if(!userType || !['transport','simple'].includes(userType)){
+    return  res.status(400).json({ message: "User must be either 'transport' or 'simple'" });
   }
 
   try {
@@ -24,7 +24,7 @@ const createUser = async (req, res) => {
       return res.status(409).json({ message: "User already exists" });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, userType });
     await user.save();
 
     return res
@@ -63,6 +63,7 @@ const loginUser = async (req, res) => {
     const payload = {
       email: user.email,
       id: user._id,
+      userType: user.userType,
     };
 
     const token = generateToken(payload);
@@ -71,7 +72,7 @@ const loginUser = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Login successful", user: { name: user.name, email: user.email, id: user._id } });
+      .json({ message: "Login successful", user: { name: user.name, email: user.email, id: user._id, userType: user.userType } });
   } catch (error) {
     console.log("Error", error);
     res.status(500).json({ message: "Internal server error" });
@@ -92,6 +93,7 @@ const getCurrentUser = async (req, res) => {
     id: user._id,
     name: user.name,
     email: user.email,
+    userType: user.userType,
     createdAt: user.createdAt
   } });
   } catch (error) {

@@ -2,19 +2,25 @@ import React, {useState,useEffect} from 'react'
 import {Link} from 'react-router-dom'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { MdEmail } from "react-icons/md";
+import { RiLockPasswordFill } from "react-icons/ri";
 
 const Login = () => {
   const navigate=useNavigate();
   const [error,setError]=useState(null);
   const [email,setEmail]=useState('');
   const [password,setPassword]=useState('');
-  const {login,isAuthenticated}=useAuth();
+  const {login,isAuthenticated,user}=useAuth();
 
   useEffect(()=>{
-     if(isAuthenticated){
-       navigate('/dashboard');
+     if(isAuthenticated && user){
+       if(user.userType === 'transport'){
+         navigate('/dashboard');
+       } else if(user.userType === 'simple'){
+         navigate('/expense-dashboard');
+       }
      }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit= async (e)=>{
     e.preventDefault();
@@ -25,10 +31,8 @@ const Login = () => {
     }
 
     try {
-      console.log('🔍 Base URL being used:', import.meta.env.VITE_API_URL);
-      const formData = await login(email, password);
-      console.log(formData);
-      navigate('/dashboard');
+      const result = await login(email, password);
+      console.log(result);
     } catch (error) {
       console.log("There was an error", error);
       setError("Invalid email or password");
@@ -49,25 +53,40 @@ const Login = () => {
       <form className='flex flex-col w-full max-w-md p-6 md:p-6 border-8 border-black bg-yellow-400 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]' >
         <h2 className='text-2xl md:text-3xl font-black uppercase text-center mb-5 border-b-4 border-black pb-3'>Login to ExpenseFlow</h2>
 
-        <label htmlFor="email" className='text-black text-lg md:text-xl font-black uppercase mb-2 tracking-tight'>
+        <label htmlFor="email" className='text-black text-sm md:text-base font-black uppercase mb-1 tracking-tight'>
             Email
         </label>
 
-        <input type="email" id='email' className='mb-4 p-3 border-4 border-black text-base font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow bg-white placeholder:text-gray-400' placeholder='Enter Your Email' 
-        value={email}
-        onChange={(e)=>setEmail(e.target.value)}
-        required
-        />
+        <div className='relative mb-2'>
+          <MdEmail className='absolute left-2 top-1/2 transform -translate-y-1/2 text-black' size={18}/>
+          <input 
+            type="email" 
+            id='email' 
+            className='w-full pl-9 pr-2 py-2 border-4 border-black text-sm font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow bg-white placeholder:text-gray-400' 
+            placeholder='Email' 
+            value={email}
+            onChange={(e)=>setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-        <label htmlFor="password" className='text-black text-lg md:text-xl font-black uppercase mb-2 tracking-tight'>
+
+        <label htmlFor="password" className='text-black text-sm md:text-base font-black uppercase mb-1 tracking-tight'>
             Password
         </label>
 
-         <input type="password" id='password' className='mb-4 p-3 border-4 border-black text-base font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow bg-white placeholder:text-gray-400' placeholder='Enter Your Password' 
-         value={password}
-         onChange={(e)=>setPassword(e.target.value)}
-        required
-        />
+        <div className="relative mb-3">
+          <RiLockPasswordFill className="absolute left-2 top-1/2 transform -translate-y-1/2 text-black" size={18} />
+          <input 
+            type="password" 
+            id='password' 
+            className='w-full pl-9 pr-2 py-2 border-4 border-black text-sm font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow bg-white placeholder:text-gray-400' 
+            placeholder='Password' 
+            value={password}
+            onChange={(e)=>setPassword(e.target.value)}
+            required
+          />
+        </div>
 
         {error && <p className='text-red-600 font-bold mb-4 text-center'>{error}</p>}
 
@@ -83,7 +102,6 @@ const Login = () => {
           <div className='flex-1 border-t-4 border-black'></div>
         </div>
 
-        {/* Sign Up Section */}
         <div className='text-center mt-3'>
           <p className='font-bold uppercase text-sm mb-3 tracking-tight'>
             Don't have an account?

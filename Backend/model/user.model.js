@@ -26,8 +26,8 @@ const userSchema = new Schema({
     },
     userType:{
         type:String,
-        enum:['transport','Simple User'],
-        default:'Simple User'
+        enum:['transport','simple'],
+        required:true,
     }
 },{timestamps:true});
 

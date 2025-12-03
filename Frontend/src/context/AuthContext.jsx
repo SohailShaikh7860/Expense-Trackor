@@ -42,9 +42,9 @@ export const AuthProvider = ({children}) => {
          }   
     }
 
-    const register = async(name,email,password)=>{
+    const register = async(name,email,password,userType)=>{
         try{
-            const response = await axios.post('/user/register',{name,email,password});
+            const response = await axios.post('/user/register',{name,email,password,userType});
             setUser(response.data.user);
             setIsAuthenticated(true);
             return {success: true};
