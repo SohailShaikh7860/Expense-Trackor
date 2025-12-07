@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import { Login, Home, Dashboard, ForgotPage, SignUp,AddTrip, View, EditTrip, Supporters, ExpenseDashboard } from "../pages/pages.js";
+import { Login, Home, Dashboard, ForgotPage, SignUp,AddTrip, View, EditTrip, Supporters } from "../pages/pages.js";
+import {ExpenseDashboard} from '../../Expense/page.js';
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 const AppRoutes = () => {

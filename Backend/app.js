@@ -8,7 +8,7 @@ import cors from 'cors';
 
 const app = express();
 
-// ✅ Allow multiple origins
+
 const allowedOrigins = [
   'http://localhost:5173',
   process.env.LOCALFRONTEND,
