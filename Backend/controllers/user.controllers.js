@@ -68,7 +68,6 @@ const loginUser = async (req, res) => {
 
     const token = generateToken(payload);
     setTokenCookie(res, token);
-    console.log(token);
 
     return res
       .status(200)
