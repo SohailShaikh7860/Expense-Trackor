@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { Login, Home, Dashboard, ForgotPage, SignUp,AddTrip, View, EditTrip, Supporters } from "../pages/pages.js";
-import {ExpenseDashboard, AddExpense} from '../../Expense/page.js';
+import {ExpenseDashboard, AddExpense, Budget} from '../../Expense/page.js';
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 const AppRoutes = () => {
@@ -65,6 +65,13 @@ const AppRoutes = () => {
             <AddExpense />
           </ProtectedRoute>
         }/>
+
+        <Route path="/budget" element={
+          <ProtectedRoute>
+            <Budget />
+          </ProtectedRoute>
+        }
+        />
       </Routes>
 
     </div>
