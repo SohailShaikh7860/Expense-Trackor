@@ -16,7 +16,7 @@ const Budget = () => {
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
   });
 
-  const { AddBudget, budget, getAllBudgets } = useSimpleExpense();
+  const { AddBudget, getAllBudgets, deleteBudget } = useSimpleExpense();
 
   const categories = [
     'Food & Drinking', 'Transportation', 'Shopping', 'Entertainment',
@@ -41,7 +41,7 @@ const Budget = () => {
       if(result.success){
         console.log('Budget created:', result);
         setShowAddForm(false);
-        await fetchBudgets(); // Refresh the budgets list
+        await fetchBudgets();
   
         setFormData({
         category: 'Food & Drinking',
@@ -70,6 +70,21 @@ const Budget = () => {
     } catch (error) {
       console.error('Error fetching budgets:', error);
     }
+  }
+
+  const handleDelete = async(budgetId)=>{
+     try {
+      const result = await deleteBudget(budgetId);
+      if(result.success){
+        console.log('Budget deleted:', result);
+        await fetchBudgets();
+      }else{
+        console.error('Failed to delete budget:', result.message);
+      }
+     } catch (error) {
+      console.error('Error deleting budget:', error);
+      return {success:false, message: error.response?.data?.message || 'Failed to delete budget'}
+     }
   }
   
 
@@ -236,11 +251,11 @@ const Budget = () => {
               </div>
               <div className="bg-white border-4 border-black p-4">
                 <p className="font-bold text-xs uppercase mb-1">Total Limit</p>
-                <p className="font-black text-3xl">₹{budgets.reduce((acc, b) => acc + b.limit, 0).toLocaleString()}</p>
+                <p className="font-black text-3xl">₹{budgets.reduce((acc, b) => acc + (b.limit || 0), 0).toLocaleString()}</p>
               </div>
               <div className="bg-white border-4 border-black p-4">
                 <p className="font-bold text-xs uppercase mb-1">Total Spent</p>
-                <p className="font-black text-3xl">₹{budgets.reduce((acc, b) => acc + b.spent, 0).toLocaleString()}</p>
+                <p className="font-black text-3xl">₹{budgets.reduce((acc, b) => acc + (b.spent || 0), 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -281,7 +296,7 @@ const Budget = () => {
                       <button className="p-2 border-4 border-black bg-white hover:bg-yellow-400 transition-colors">
                         <FiEdit2 className="text-lg" />
                       </button>
-                      <button className="p-2 border-4 border-black bg-white hover:bg-red-400 transition-colors">
+                      <button className="p-2 border-4 border-black bg-white hover:bg-red-400 transition-colors" onClick={() => handleDelete(budget._id)}>
                         <FiTrash2 className="text-lg" />
                       </button>
                     </div>

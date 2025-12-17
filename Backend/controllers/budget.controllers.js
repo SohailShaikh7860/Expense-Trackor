@@ -1,4 +1,5 @@
 import Budget from '../model/budget.model.js';
+import Expense from '../model/expense.model.js';
 import { validationResult } from 'express-validator';
 
 export const createBudget = async(req,res)=>{
@@ -34,7 +35,24 @@ export const getBudget = async(req,res)=>{
         if(!budget){
             return res.status(404).json({message: "Budget not found"});
         }
-        return res.status(200).json({message: "Budget fetched successfully", budget});
+        
+        const expenses = await Expense.find({
+            userId,
+            category: budget.category,
+            date: {
+                $gte: new Date(budget.startDate),
+                $lte: new Date(budget.endDate)
+            }
+        });
+        
+        const spent = expenses.reduce((total, expense) => total + expense.amount, 0);
+        
+        const budgetWithSpent = {
+            ...budget.toObject(),
+            spent
+        };
+        
+        return res.status(200).json({message: "Budget fetched successfully", budget: budgetWithSpent});
     } catch (error) {
         return res.status(500).json({ message: "Failed to get budget", error: error.message });
     }
@@ -44,7 +62,32 @@ export const getAllBudgets = async(req,res)=>{
     try{
         const userId = req.user.id;
         const budgets = await Budget.find({userId}).sort({createdAt: -1});
-        return res.status(200).json({budgets, count: budgets.length});
+        
+       
+        const budgetsWithSpent = await Promise.all(
+            budgets.map(async (budget) => {
+                const budgetObj = budget.toObject();
+                
+                
+                const expenses = await Expense.find({
+                    userId,
+                    category: budget.category,
+                    date: {
+                        $gte: new Date(budget.startDate),
+                        $lte: new Date(budget.endDate)
+                    }
+                });
+                
+                const spent = expenses.reduce((total, expense) => total + expense.amount, 0);
+                
+                return {
+                    ...budgetObj,
+                    spent
+                };
+            })
+        );
+        
+        return res.status(200).json({budgets: budgetsWithSpent, count: budgetsWithSpent.length});
     }catch(error){
         return res.status(500).json({ message: "Failed to get budgets", error: error.message });
     }
@@ -86,7 +129,7 @@ export const deleteBudget = async(req,res)=>{
     const {id} = req.params;
 
     try {
-        const userId = req.body.id;
+        const userId = req.user.id;
         const deletedBudget = await Budget.findOneAndDelete({_id:id, userId});
         if(!deletedBudget){
             return res.status(404).json({message: "Budget not found"});
