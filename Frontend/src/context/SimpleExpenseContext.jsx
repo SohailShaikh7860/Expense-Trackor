@@ -8,6 +8,7 @@ export const SimpleExpenseContextProvider = ({ children }) => {
     const [expenses, setExpenses] = useState([]);
     const [loading, setLoading] = useState(false);
     const [simpleUser, setSimpleUser] = useState(null);
+    const [budget, setBudget] = useState(null);
 
     const createExpense = async(expenseData)=>{
         try {
@@ -34,13 +35,59 @@ export const SimpleExpenseContextProvider = ({ children }) => {
         }
     }
 
+    const AddBudget = async(budgetData)=>{
+        setLoading(true)
+        try {
+            const response = await axios.post('/budget/addBudget', budgetData);
+            setBudget(response.data.budget);
+            return {success:true, data: response.data};
+        } catch (error) {
+            console.log("Error in adding budget", error);
+            return {success:false, message: error.response?.data?.message || 'Failed to add budget'};
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const getBudget = async(budgetId)=>{
+        setLoading(true);
+        try {
+            const response = await axios.get(`/budget/getBudget/${budgetId}`);
+            setBudget(response.data.budget);
+            return {success:true, data: response.data};
+        } catch (error) {
+            console.log("Error in fetching budget", error);
+            return {success:false, message: error.response?.data?.message || 'Failed to fetch budget'};
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const getAllBudgets = async()=>{
+        setLoading(true);
+        try {
+            const response = await axios.get('/budget/getAllBudgets');
+            setBudget(response.data.budgets);
+            return {success:true, data: response.data};
+        } catch (error) {
+            console.log("Error in fetching budgets", error);
+            return {success:false, message: error.response?.data?.message || 'Failed to fetch budgets'};
+        } finally {
+            setLoading(false);
+        }
+    }
+
 
     const value = {
         createExpense,
         getAllSimpleExpenses,
+        AddBudget,
+        getBudget,
+        getAllBudgets,
         loading,
         simpleUser,
-        expenses
+        expenses,
+        budget
     }
   return (
     <SimpleExpenseContext.Provider value={value}>

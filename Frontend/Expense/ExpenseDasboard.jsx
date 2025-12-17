@@ -10,7 +10,7 @@ const ExpenseDashboard = () => {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
-  const {getAllSimpleExpenses, expenses, loading} = useSimpleExpense();
+  const {getAllSimpleExpenses, expenses, loading, budget, getAllBudgets} = useSimpleExpense();
 
   const firstLetter = user?.name?.charAt(0).toUpperCase() || 'U';
 
@@ -33,6 +33,7 @@ const ExpenseDashboard = () => {
 
   useEffect(() => {
     fetchExpenses();
+    fetchBudgets();
   }, []);
 
   const fetchExpenses = async()=>{
@@ -44,15 +45,25 @@ const ExpenseDashboard = () => {
     }
   }
 
+  const fetchBudgets = async()=>{
+    try {
+      await getAllBudgets();
+      console.log("budgets fetched in dashboard");
+    } catch (error) {
+      console.log("fetch budgets error:", error);
+    }
+  }
+
   
   const calculateStats = () => {
     if (!expenses || expenses.length === 0) {
       return {
         totalExpenses: 0,
         thisMonth: 0,
-        budget: 15000, 
+        totalBudget: 0, 
         categories: [],
-        recentExpenses: []
+        recentExpenses: [],
+        budgetByCategory: []
       };
     }
 
@@ -99,17 +110,37 @@ const ExpenseDashboard = () => {
         date: new Date(exp.date).toLocaleDateString()
       }));
 
+    const totalBudget = budget && Array.isArray(budget) 
+      ? budget.reduce((acc, b) => acc + (b.limit || 0), 0) 
+      : 0;
+
+    const budgetByCategory = budget && Array.isArray(budget)
+      ? budget.map(b => {
+          const spent = categoryMap[b.category] || 0;
+          const percentage = b.limit > 0 ? (spent / b.limit) * 100 : 0;
+          return {
+            category: b.category,
+            limit: b.limit,
+            spent: spent,
+            remaining: b.limit - spent,
+            percentage: percentage,
+            status: percentage >= 90 ? 'danger' : percentage >= 75 ? 'warning' : 'safe'
+          };
+        }).sort((a, b) => b.percentage - a.percentage)
+      : [];
+
     return {
       totalExpenses,
       thisMonth: thisMonthTotal,
-      budget: 15000, 
+      totalBudget, 
       categories,
-      recentExpenses
+      recentExpenses,
+      budgetByCategory
     };
   };
 
   const stats = calculateStats();
-  const budgetPercentage = stats.budget > 0 ? (stats.thisMonth / stats.budget) * 100 : 0;
+  const budgetPercentage = stats.totalBudget > 0 ? (stats.thisMonth / stats.totalBudget) * 100 : 0;
 
   if (loading) {
     return (
@@ -213,11 +244,11 @@ const ExpenseDashboard = () => {
               <p className="font-black uppercase text-sm">Budget Left</p>
               <MdAccountBalanceWallet className="text-2xl" />
             </div>
-            <p className="font-black text-3xl">₹{(stats.budget - stats.thisMonth).toLocaleString()}</p>
+            <p className="font-black text-3xl">₹{(stats.totalBudget - stats.thisMonth).toLocaleString()}</p>
             <div className="mt-3">
               <div className="flex justify-between font-bold text-xs mb-1">
                 <span>{budgetPercentage.toFixed(0)}% used</span>
-                <span>₹{stats.budget.toLocaleString()}</span>
+                <span>₹{stats.totalBudget.toLocaleString()}</span>
               </div>
               <div className="h-3 bg-gray-200 border-2 border-black">
                 <div
@@ -309,6 +340,58 @@ const ExpenseDashboard = () => {
           </div>
         </div>
 
+       
+        {stats.budgetByCategory.length > 0 && (
+          <div className="mt-6">
+            <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <h2 className="font-black text-xl uppercase mb-4 pb-3 border-b-4 border-black">
+                Budget Limits
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {stats.budgetByCategory.map((item, index) => (
+                  <div 
+                    key={index}
+                    className={`p-4 border-4 border-black ${
+                      item.status === 'danger' ? 'bg-red-100' : 
+                      item.status === 'warning' ? 'bg-yellow-100' : 
+                      'bg-green-100'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-black text-sm uppercase">{item.category}</p>
+                        <p className="font-bold text-xs text-gray-600 mt-1">
+                          ₹{item.spent.toLocaleString()} / ₹{item.limit.toLocaleString()}
+                        </p>
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-black border-2 border-black ${
+                        item.status === 'danger' ? 'bg-red-500 text-white' : 
+                        item.status === 'warning' ? 'bg-yellow-500' : 
+                        'bg-green-500 text-white'
+                      }`}>
+                        {item.percentage.toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="h-4 bg-white border-2 border-black">
+                      <div
+                        className={`h-full ${
+                          item.status === 'danger' ? 'bg-red-500' : 
+                          item.status === 'warning' ? 'bg-yellow-500' : 
+                          'bg-green-500'
+                        }`}
+                        style={{ width: `${Math.min(item.percentage, 100)}%` }}
+                      />
+                    </div>
+                    <p className="font-bold text-xs mt-2">
+                      Remaining: ₹{item.remaining.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         
         <div className="mt-6">
           <div className="bg-yellow-400 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -317,9 +400,9 @@ const ExpenseDashboard = () => {
               <Link to="/add-expense" className="bg-white border-4 border-black p-4 font-black uppercase text-sm hover:bg-black hover:text-yellow-400 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
                 + Add Expense
               </Link>
-              <button className="bg-white border-4 border-black p-4 font-black uppercase text-sm hover:bg-black hover:text-yellow-400 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
+              <Link to="/budget" className="bg-white border-4 border-black p-4 font-black uppercase text-sm hover:bg-black hover:text-yellow-400 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
                 Set Budget
-              </button>
+              </Link>
               <button className="bg-white border-4 border-black p-4 font-black uppercase text-sm hover:bg-black hover:text-yellow-400 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
                 View Reports
               </button>

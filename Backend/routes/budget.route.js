@@ -1,5 +1,5 @@
 import express from "express";
-import { createBudget, getBudget, getAllBudgets } from "../controllers/budget.controllers.js";
+import { createBudget, getBudget, getAllBudgets, updateBudget, deleteBudget } from "../controllers/budget.controllers.js";
 import { body } from "express-validator";
 import { authToken } from "../middleware/auth.js";
 
@@ -18,5 +18,7 @@ route.use(authToken);
 route.post('/addBudget', budgetValidation, createBudget);
 route.get('/getBudget/:id', getBudget);
 route.get('/getAllBudgets', getAllBudgets);
+route.put('/updateBudget/:id', budgetValidation, updateBudget);
+route.delete('/deleteBudget/:id', deleteBudget);
 
 export default route;

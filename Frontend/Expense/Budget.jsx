@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiTrendingUp } from 'react-icons/fi';
 import { MdAccountBalanceWallet } from 'react-icons/md';
+import { useSimpleExpense } from '../src/context/SimpleExpenseContext';
 
 const Budget = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const Budget = () => {
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
   });
+
+  const { AddBudget, budget, getAllBudgets } = useSimpleExpense();
 
   const categories = [
     'Food & Drinking', 'Transportation', 'Shopping', 'Entertainment',
@@ -29,30 +32,49 @@ const Budget = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     
-    console.log('Creating budget:', formData);
-    setShowAddForm(false);
+    try {
+     const result = await AddBudget(formData);
+
+      if(result.success){
+        console.log('Budget created:', result);
+        setShowAddForm(false);
+        await fetchBudgets(); // Refresh the budgets list
+  
+        setFormData({
+        category: 'Food & Drinking',
+        limit: '',
+        period: 'Monthly',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
+      });
+      }else{
+        console.error('Failed to create budget:', result.message);
+      }
+    } catch (error) {
+      console.error('Error creating budget:', error);
+    }
     
-    setFormData({
-      category: 'Food & Drinking',
-      limit: '',
-      period: 'Monthly',
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0]
-    });
   };
 
+  const fetchBudgets = async()=>{
+    try {
+       const result = await getAllBudgets();
+       if(result.success){
+        setBudgets(result.data.budgets);
+       }else{
+        console.error('Failed to fetch budgets:', result.message);
+       }
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+    }
+  }
   
-  const mockBudgets = [
-    { id: 1, category: 'Food & Drinking', limit: 5000, spent: 3200, period: 'Monthly', startDate: '2024-12-01', endDate: '2024-12-31' },
-    { id: 2, category: 'Transportation', limit: 3000, spent: 2100, period: 'Monthly', startDate: '2024-12-01', endDate: '2024-12-31' },
-    { id: 3, category: 'Shopping', limit: 4000, spent: 3800, period: 'Monthly', startDate: '2024-12-01', endDate: '2024-12-31' },
-  ];
 
   useEffect(() => {
-    setBudgets(mockBudgets);
+    fetchBudgets();
   }, []);
 
   const calculatePercentage = (spent, limit) => {
@@ -242,11 +264,12 @@ const Budget = () => {
             </div>
           ) : (
             budgets.map((budget) => {
-              const percentage = calculatePercentage(budget.spent, budget.limit);
+              const spent = budget.spent || 0; 
+              const percentage = calculatePercentage(spent, budget.limit);
               const progressColor = getProgressColor(percentage);
               
               return (
-                <div key={budget.id} className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
+                <div key={budget._id} className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-black text-xl uppercase mb-1">{budget.category}</h3>
@@ -267,7 +290,7 @@ const Budget = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="font-black text-sm uppercase">Spent</span>
-                      <span className="font-black text-lg">₹{budget.spent.toLocaleString()} / ₹{budget.limit.toLocaleString()}</span>
+                      <span className="font-black text-lg">₹{spent.toLocaleString()} / ₹{budget.limit.toLocaleString()}</span>
                     </div>
 
                     
@@ -289,7 +312,7 @@ const Budget = () => {
                         {budget.period}
                       </span>
                       <span className="font-bold text-sm">
-                        ₹{(budget.limit - budget.spent).toLocaleString()} remaining
+                        ₹{(budget.limit - spent).toLocaleString()} remaining
                       </span>
                     </div>
                   </div>
