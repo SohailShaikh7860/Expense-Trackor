@@ -163,16 +163,16 @@ const Dashboard = () => {
         >
           Overview
         </button>
-        <button
+        <Link to="/all-trips"
           onClick={() => setActiveTab("trips")}
           className={`font-black text-sm md:text-base uppercase py-2 px-4 border-4 border-black transition-all ${
             activeTab === "trips"
               ? "bg-yellow-400 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               : "bg-white hover:bg-yellow-400"
           }`}
-        >
+          >
           All Trips
-        </button>
+        </Link>
         <button
           onClick={() => setActiveTab("reports")}
           className={`font-black text-sm md:text-base uppercase py-2 px-4 border-4 border-black transition-all ${
@@ -302,12 +302,11 @@ const Dashboard = () => {
         </div>
 
         <div className="border-t-4 border-black p-4 bg-stone-50 text-center">
-          <button
-            onClick={() => setActiveTab("trips")}
+          <Link to="/all-trips"
             className="font-black uppercase text-sm underline decoration-4 decoration-black hover:text-yellow-600 transition-colors"
           >
             View All Trips ({trips.length}) →
-          </button>
+          </Link>
         </div>
       </div>
 

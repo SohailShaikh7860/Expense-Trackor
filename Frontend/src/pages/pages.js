@@ -8,5 +8,6 @@ import EditTrip from "./EditTrip";
 import View from "./View";
 import SupportButton from "./SupportButton";
 import Supporters from "./SupportPage";
+import AllTrips from "./AllTrips";
 
-export { Login, Home, Dashboard, ForgotPage, SignUp, AddTrip, EditTrip, View, SupportButton, Supporters };
+export { Login, Home, Dashboard, ForgotPage, SignUp, AddTrip, EditTrip, View, SupportButton, Supporters, AllTrips };
