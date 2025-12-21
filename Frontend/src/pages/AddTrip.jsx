@@ -17,7 +17,7 @@ const AddTrips = () => {
   const [formData, setFormData] = useState({
     Vehicle_Number: '',
     route: '',
-    monthAndYear: '',
+    tripDate: '',
     totalIncome: '',
     fuelCost: '',
     driverAllowance: {
@@ -32,7 +32,8 @@ const AddTrips = () => {
     commission: '',
     pendingAmount: '',
     paymentStatus: 'Pending',
-    phonePai: ''
+    phonePai: '',
+    commissionPaymentDate: ''
   })
 
   const handleChange = (e) => {
@@ -105,6 +106,7 @@ const AddTrips = () => {
       commission: Number(formData.commission) || 0,
       pendingAmount: Number(formData.pendingAmount) || 0,
       phonePai: Number(formData.phonePai) || 0,
+      commissionPaymentDate: formData.commissionPaymentDate || null
     };
 
     try {
@@ -233,14 +235,14 @@ const AddTrips = () => {
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
-                  Month & Year <span className='text-red-500'>*</span>
+                  Trip Date <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type='month'
-                  name='monthAndYear'
-                  value={formData.monthAndYear}
+                  type='date'
+                  name='tripDate'
+                  value={formData.tripDate}
                   onChange={handleChange}
-                  className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
+                  className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow uppercase'
                   required />
               </div>
 
@@ -339,6 +341,19 @@ const AddTrips = () => {
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
                   placeholder='0' />
+              </div>
+
+              <div>
+                <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
+                  Commission Payment Date
+                </label>
+                <input
+                  type='date'
+                  name='commissionPaymentDate'
+                  value={formData.commissionPaymentDate}
+                  onChange={handleChange}
+                  className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow uppercase'
+                  required />
               </div>
 
               <div>

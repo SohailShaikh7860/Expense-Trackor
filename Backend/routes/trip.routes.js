@@ -24,9 +24,9 @@ router.post(
       .withMessage("Vehicle Number is required")
       .trim(),
     body("route").notEmpty().withMessage("Route is required").trim(),
-    body("monthAndYear")
+    body("tripDate")
       .notEmpty()
-      .withMessage("Month and Year are required")
+      .withMessage("Trip Date is required")
       .trim(),
     body("totalIncome")
       .notEmpty()
@@ -86,11 +86,11 @@ router.put(
       .trim()
       .notEmpty()
       .withMessage("Route cannot be empty"),
-    body("monthAndYear")
+    body("tripDate")
       .optional({ values: 'falsy' })
       .trim()
       .notEmpty()
-      .withMessage("Month and year cannot be empty"),
+      .withMessage("Trip Date cannot be empty"),
     body("totalIncome")
       .optional({ values: 'falsy' })
       .isNumeric()

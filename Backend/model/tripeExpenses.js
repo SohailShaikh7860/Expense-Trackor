@@ -14,7 +14,7 @@ const tripeExpensesSchema = new Schema({
         type:String,
         required:true
     },
-    monthAndYear:{
+    tripDate:{
         type:String,
         required:true
     },
@@ -59,6 +59,9 @@ const tripeExpensesSchema = new Schema({
     commission:{
         type:Number,
         default:0
+    },
+    commissionPaymentDate:{
+        type:Date
     },
     pendingAmount:{
         type:Number,

@@ -399,6 +399,21 @@ const View = () => {
                   {new Date(trip.createdAt).toLocaleDateString("en-IN")}
                 </p>
               </div>
+
+              <div
+                className="border-4 border-black p-4"
+                style={{ backgroundColor: "#f9fafb" }}
+              >
+                <p
+                  className="text-xs font-black uppercase mb-2"
+                  style={{ color: "#4b5563" }}
+                >
+                  Commission Payment Date
+                </p>
+                <p className="text-lg font-black">
+                  {new Date(trip.commissionPaymentDate).toLocaleDateString("en-IN")}
+                </p>
+              </div>
             </div>
           </div>
 

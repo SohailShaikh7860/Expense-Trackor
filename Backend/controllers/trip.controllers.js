@@ -14,11 +14,11 @@ const createTripExpense = async(req,res)=>{
 
     const userId = req.user.id;
 
-    let {Vehicle_Number, route, monthAndYear, totalIncome, fuelCost, driverAllowance, hamaali, paidTransport, maintenanceCost, otherExpenses, commission, pendingAmount, paymentStatus, phonePai} = req.body;
+    let {Vehicle_Number, route, tripDate, totalIncome, fuelCost, driverAllowance, hamaali, paidTransport, maintenanceCost, otherExpenses, commission, pendingAmount, paymentStatus, phonePai, commissionPaymentDate} = req.body;
 
     Vehicle_Number = Vehicle_Number?.trim().toString().toUpperCase();
     route = route?.trim().toString();
-    monthAndYear = monthAndYear?.trim().toString();
+    tripDate = tripDate?.trim().toString();
 
 
     try {
@@ -26,7 +26,7 @@ const createTripExpense = async(req,res)=>{
             userId,
             Vehicle_Number,
             route,
-            monthAndYear,
+            tripDate,
             totalIncome,
             fuelCost: fuelCost || 0,
             driverAllowance: driverAllowance || { totalSalary: 7000, bonus: 0, paid: 0 },
@@ -37,7 +37,8 @@ const createTripExpense = async(req,res)=>{
             commission: commission || 0,
             pendingAmount: pendingAmount || 0,
             paymentStatus: paymentStatus || "Pending",
-            phonePai: phonePai || 0
+            phonePai: phonePai || 0,
+            commissionPaymentDate: commissionPaymentDate || null
         });
 
         const netProfit = tripExpense.netProfit;
@@ -89,7 +90,7 @@ const updateTrips = async (req, res) => {
   const allowedFields = [
     "Vehicle_Number",
     "route",
-    "monthAndYear",
+    "tripDate",
     "totalIncome",
     "fuelCost",
     "hamaali",
@@ -99,7 +100,9 @@ const updateTrips = async (req, res) => {
     "commission",
     "pendingAmount",
     "paymentStatus",
-    "phonePai"
+    "phonePai",
+    "commissionPaymentDate",
+    "driverAllowance"
   ];
 
   const updates = {};

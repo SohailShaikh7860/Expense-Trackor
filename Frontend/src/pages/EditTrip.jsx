@@ -12,7 +12,7 @@ const EditTrip = () => {
   const [formData, setFormData] = useState({
     Vehicle_Number: '',
     route: '',
-    monthAndYear: '',
+    tripDate: '',
     totalIncome: '',
     fuelCost: '',
     driverAllowance: {
@@ -28,6 +28,7 @@ const EditTrip = () => {
     pendingAmount: '',
     phonePai: '',
     paymentStatus: 'Pending',
+    commissionPaymentDate: ''
   })
 
   const [receiptFiles, setReceiptFiles] = useState([])
@@ -57,7 +58,7 @@ const EditTrip = () => {
       setFormData({
         Vehicle_Number: trip.Vehicle_Number || '',
         route: trip.route || '',
-        monthAndYear: trip.monthAndYear || '',
+        tripDate: trip.tripDate || '',
         totalIncome: trip.totalIncome || '',
         fuelCost: trip.fuelCost || '',
         driverAllowance: trip.driverAllowance || {
@@ -73,6 +74,7 @@ const EditTrip = () => {
         pendingAmount: trip.pendingAmount || '',
         phonePai: trip.phonePai || '',
         paymentStatus: trip.paymentStatus || 'Pending',
+        commissionPaymentDate: trip.commissionPaymentDate || ''
       })
       
       loadReceipts()
@@ -292,12 +294,12 @@ const EditTrip = () => {
             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
               <div>
                 <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
-                  Month & Year <span className='text-red-500'>*</span>
+                  Trip Date <span className='text-red-500'>*</span>
                 </label>
                 <input
-                  type='month'
-                  name='monthAndYear'
-                  value={formData.monthAndYear}
+                  type='date'
+                  name='tripDate'
+                  value={formData.tripDate}
                   onChange={handleChange}
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
                   required
@@ -401,6 +403,19 @@ const EditTrip = () => {
                   className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow'
                   placeholder='0'
                 />
+              </div>
+
+              <div>
+                <label className='block font-black uppercase text-sm mb-2 tracking-tight'>
+                  Commission Payment Date
+                </label>
+                <input
+                  type='date'
+                  name='commissionPaymentDate'
+                  value={formData.commissionPaymentDate}
+                  onChange={handleChange}
+                  className='w-full p-3 border-4 border-black font-bold focus:outline-none focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-shadow uppercase'
+                  required />
               </div>
 
               <div>
