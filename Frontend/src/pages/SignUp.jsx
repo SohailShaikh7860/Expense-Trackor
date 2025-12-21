@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
 import { FaUser } from "react-icons/fa";
+import { toast } from 'react-toastify';
 
 const SignUp = () => {
     const [error, setError] = useState(null);
@@ -24,11 +25,16 @@ const SignUp = () => {
 
         try {
             const formData = await register(name,email,password, userType)
-            console.log(formData);
-            setError(null);
-            navigate('/login');
+            if(formData.success){
+                toast.success("Registration successful! Please login.");
+                navigate('/login');
+            }else{
+                setError(formData.message);
+                toast.error(formData.message);
+            }
         } catch (error) {
             setError("Registration failed. Please try again.");
+            toast.error("Registration failed. Please try again.");
         }
     }
   return (
@@ -127,7 +133,7 @@ const SignUp = () => {
         {error && <p className="text-red-600 font-bold mb-2 text-center text-sm">{error}</p>}
 
         <button className="bg-black text-yellow-400 font-black text-base md:text-xl uppercase py-2 px-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all mb-2 select-none" type="submit" onClick={handleSubmit}>
-          Submit
+          Sign Up
         </button>
 
         <div className="flex items-center my-1">

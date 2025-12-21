@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTrip } from '../context/TripContext'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'react-toastify'
 
 const EditTrip = () => {
   const { id } = useParams() 
@@ -143,9 +144,11 @@ const EditTrip = () => {
       if (result.success) {
         setExistingReceipts(existingReceipts.filter(r => r._id !== receiptId))
         setSuccess('Receipt deleted successfully')
+        toast.success("Receipt deleted successfully!");
         setTimeout(() => setSuccess(''), 3000)
       } else {
         setError(result.message || 'Failed to delete receipt')
+        toast.error(result.message || 'Failed to delete receipt');
       }
     }
   }
@@ -173,6 +176,7 @@ const EditTrip = () => {
     
     if (failCount > 0) {
       setError(`${failCount} receipt(s) failed to upload`)
+      toast.error(`${failCount} receipt(s) failed to upload`);
     }
   }
 
@@ -203,15 +207,18 @@ const EditTrip = () => {
         }
         
         setSuccess('Trip updated successfully!')
+        toast.success("Trip updated successfully!");
         setTimeout(() => {
           navigate('/dashboard')
         }, 1500)
       } else {
         setError(result.message || 'Failed to update trip')
+        toast.error(result.message || 'Failed to update trip');
       }
     } catch (error) {
       console.error('Update trip error:', error)
       setError('Failed to update trip')
+      toast.error('Failed to update trip');
     }
   }
 

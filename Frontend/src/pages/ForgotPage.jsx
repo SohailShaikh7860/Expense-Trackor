@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "../config/Axios";
+import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 const ForgotPage = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const ForgotPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
+  const { resetPassOtp, resetPassword } = useAuth();
   
   const inputRefs = useRef([]);
 
@@ -26,12 +28,13 @@ const ForgotPage = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post("/user/send-reset-otp", { email });
-      console.log(response.data);
+      const response = await resetPassOtp(email);
       setIsEmailSent(true);
+      toast.success(response.message || "OTP sent successfully!");
     } catch (error) {
       console.error("Send OTP error:", error);
       setError(error.response?.data?.message || "Failed to send OTP");
+      toast.error(error.response?.data?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -47,7 +50,6 @@ const ForgotPage = () => {
     newOtpValues[index] = value;
     setOtpValues(newOtpValues);
 
-    // Auto-focus next input
     if (value.length === 1 && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -89,10 +91,12 @@ const ForgotPage = () => {
     if (otp.length !== 6) {
       setError("Please enter complete 6-digit OTP");
       return;
+    }else{
+      toast.success("OTP verified successfully!");
+      setIsOtpVerified(true);
     }
 
 
-    setIsOtpVerified(true);
   };
 
  
@@ -111,20 +115,19 @@ const ForgotPage = () => {
     }
 
     try {
-      setLoading(true);
       const otp = otpValues.join("");
-      const response = await axios.post("/user/reset-password", {
-        email,
-        otp,
-        newPassword: password
-      });
-      
-      console.log(response.data);
-      alert("Password reset successful! Redirecting to login...");
-      navigate("/login");
+      const response = await resetPassword(email, otp, password);
+      if(response.success){
+        toast.success(response.message || "Password reset successful!");
+        navigate("/login");
+      }else{
+        setError(response.message || "Failed to reset password");
+        toast.error(response.message || "Failed to reset password");
+      }
     } catch (error) {
       console.error("Reset password error:", error);
       setError(error.response?.data?.message || "Failed to reset password");
+      toast.error(error.response?.data?.message || "Failed to reset password");
     } finally {
       setLoading(false);
     }

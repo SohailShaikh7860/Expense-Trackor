@@ -70,10 +70,35 @@ export const AuthProvider = ({children}) => {
         }
     }
 
+    //Reset password function's added here
+
+    const resetPassword = async(email, otp, newPassword)=>{
+        try {
+            setLoading(true);
+            const reponse = await axios.post('/user/reset-password',{email, otp, newPassword});
+            return {success:true, message: reponse.data.message || 'Password reset successful'};
+        } catch (error) {
+            return{success:false, message: error.response?.data?.message || 'Password reset failed'};
+        }
+    }
+
+    const resetPassOtp = async(email)=>{
+        try{
+            setLoading(true);
+            const response = await axios.post('/user/send-reset-otp',{email});
+            return {success:true, message: response.data.message || 'OTP sent successfully'};
+        }catch(error){ 
+            return {success:false, message: error.response?.data?.message || 'Failed to send OTP'};
+        }
+
+    }
+
     const value ={
         user,
         loading,
         isAuthenticated,
+        resetPassOtp,
+        resetPassword,
         login,
         logOut,
         register,

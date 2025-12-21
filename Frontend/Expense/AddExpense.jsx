@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiSave, FiUpload } from 'react-icons/fi';
 import { useSimpleExpense } from '../src/context/SimpleExpenseContext';
+import { toast } from 'react-toastify';
 
 const AddExpense = () => {
   const navigate = useNavigate();
@@ -38,9 +39,14 @@ const AddExpense = () => {
     e.preventDefault();
     try {
         const res = createExpense(formData);
-        navigate('/expense-dashboard');
+        if(res.success){
+          toast.success("Expense added successfully!");
+          navigate('/expense-dashboard');
+        }else{
+          toast.error("Failed to add expense: " + res.message);
+        }
     } catch (error) {
-        console.log(error);    
+        toast.error("Failed to add expense: " + error.message);
     }
   };
 

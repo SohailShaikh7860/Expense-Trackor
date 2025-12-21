@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { MdEmail } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const navigate=useNavigate();
@@ -27,15 +28,22 @@ const Login = () => {
 
     if(!email || !password){
       setError("All fields are required");
+      toast.error("All fields are required");
       return;
     }
 
     try {
       const result = await login(email, password);
-      console.log(result);
+      if(result.success){
+        toast.success("Login successful!");
+        setError(null);
+      }else{
+        setError(result.message);
+        toast.error(result.message);
+      }
     } catch (error) {
-      console.log("There was an error", error);
-      setError("Invalid email or password");
+      setError(error.response?.data?.message || "Login failed. Please try again.");
+      toast.error(error.response?.data?.message || "Login failed. Please try again.");
     }
     
   }
@@ -94,7 +102,7 @@ const Login = () => {
         Forgot Password?
         </Link>
 
-        <button className='bg-black text-yellow-400 font-black text-xl md:text-2xl uppercase py-3 px-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2 transition-all mb-4 select-none' type='submit' onClick={handleSubmit}>Submit</button>
+        <button className='bg-black text-yellow-400 font-black text-xl md:text-2xl uppercase py-3 px-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-2 hover:translate-y-2 transition-all mb-4 select-none' type='submit' onClick={handleSubmit}>Login</button>
 
         <div className='flex items-center my-3'>
           <div className='flex-1 border-t-4 border-black'></div>

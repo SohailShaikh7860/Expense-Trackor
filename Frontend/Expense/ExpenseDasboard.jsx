@@ -39,9 +39,8 @@ const ExpenseDashboard = () => {
   const fetchExpenses = async()=>{
     try {
       await getAllSimpleExpenses();
-      console.log("expenses fetched in dashboard");
     } catch (error) {
-      console.log("fetch expenses error:", error);
+      console.error("fetch expenses error:", error);
     }
   }
 
@@ -49,7 +48,7 @@ const ExpenseDashboard = () => {
     try {
       await getAllBudgets();
     } catch (error) {
-      throw error;
+      console.error("fetch budgets error:", error);
     }
   }
 

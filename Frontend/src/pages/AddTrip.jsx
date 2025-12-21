@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTrip } from '../context/TripContext'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { toast } from 'react-toastify';
 
 const AddTrips = () => {
   const navigate = useNavigate()
@@ -109,15 +110,14 @@ const AddTrips = () => {
     try {
       setLoading(true)
       const result = await addTrip(sanitizedData);
-      console.log('Trip created:', result)
       
       if (result.success) {
         const tripId = result.data?.tripExpense?._id;
-        console.log('Trip Id is', tripId);
         
         if (receiptFiles.length > 0 && tripId) {
           await handleUploadReceipts(tripId)
         }
+        toast.success("Trip added successfully!");
         setSuccess('Trip added successfully!')
         
         setTimeout(() => {
@@ -125,10 +125,11 @@ const AddTrips = () => {
         }, 1500)
       } else {
         setError(result.message || 'Failed to add trip')
+        toast.error(result.message || 'Failed to add trip');
       }
       
     } catch (error) {
-      console.error('Add trip error:', error)
+      toast.error('Failed to add trip');
       setError('Failed to add trip')
     } finally {
       setLoading(false)
@@ -140,10 +141,13 @@ const AddTrips = () => {
      
       for (const file of receiptFiles) {
         const uploadResult = await uploadReceipts(tripId,file);
-        console.log("Receipt upload result",uploadResult);
+        
         
         if(!uploadResult.success){
           setError(uploadResult.message || 'Failed to upload some receipts')
+          toast.error(uploadResult.message || 'Failed to upload some receipts');
+        }else{
+          toast.success('Receipts uploaded successfully!');
         }
 
       }      

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FiArrowLeft, FiPlus, FiEdit2, FiTrash2, FiTrendingUp } from 'react-icons/fi';
 import { MdAccountBalanceWallet } from 'react-icons/md';
 import { useSimpleExpense } from '../src/context/SimpleExpenseContext';
+import { toast } from 'react-toastify';
 
 const Budget = () => {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ const Budget = () => {
         setShowAddForm(false);
         setIsEditMode(false);
         setEditingBudgetId(null);
+        toast.success(isEditMode ? "Budget updated successfully!" : "Budget created successfully!");
         await fetchBudgets();
   
         setFormData({
@@ -62,9 +64,11 @@ const Budget = () => {
       });
       }else{
         console.error(isEditMode ? 'Failed to update budget:' : 'Failed to create budget:', result.message);
+        toast.error(result.message || (isEditMode ? "Failed to update budget" : "Failed to create budget"));
       }
     } catch (error) {
       console.error(isEditMode ? 'Error updating budget:' : 'Error creating budget:', error);
+      toast.error(error.response?.data?.message || (isEditMode ? "Failed to update budget" : "Failed to create budget"));
     }
     
   };
@@ -76,9 +80,11 @@ const Budget = () => {
         setBudgets(result.data.budgets);
        }else{
         console.error('Failed to fetch budgets:', result.message);
+        toast.error(result.message || 'Failed to fetch budgets');
        }
     } catch (error) {
       console.error('Error fetching budgets:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch budgets');
     }
   }
 
@@ -86,10 +92,10 @@ const Budget = () => {
      try {
       const result = await deleteBudget(budgetId);
       if(result.success){
-        console.log('Budget deleted:', result);
+        toast.success('Budget deleted successfully!');
         await fetchBudgets();
       }else{
-        console.error('Failed to delete budget:', result.message);
+        toast.error(result.message || 'Failed to delete budget');
       }
      } catch (error) {
       console.error('Error deleting budget:', error);
