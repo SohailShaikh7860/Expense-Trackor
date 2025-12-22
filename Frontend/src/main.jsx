@@ -9,17 +9,26 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <App />
     <ToastContainer
-      position="top-right"
-      autoClose={3000}
+      position="top-center"
+      autoClose={2000}
       hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick={false}
-      rtl={false}
-      pauseOnFocusLoss
+      newestOnTop
+      closeOnClick
       draggable
       pauseOnHover
       theme="dark"
-      transition={Bounce}
+      toastStyle={{
+        width: "100%",
+        maxWidth: "320px",
+        margin: "0 auto",
+        padding: "8px 10px",
+        fontSize: "0.8rem",
+        borderRadius: "6px",
+      }}
+      style={{
+        width: "100%",
+        padding: "0 8px",
+      }}
     />
   </StrictMode>
 );

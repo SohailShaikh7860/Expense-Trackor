@@ -35,18 +35,21 @@ const AddExpense = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        const res = createExpense(formData);
-        if(res.success){
-          toast.success("Expense added successfully!");
-          navigate('/expense-dashboard');
-        }else{
-          toast.error("Failed to add expense: " + res.message);
-        }
+      const res = await createExpense(formData);
+
+      if (res.success) {
+        console.log("Added successfully");
+        toast.success("Expense added successfully!");
+        navigate('/expense-dashboard');
+      } else {
+        console.log("Error creating expense", res.message);
+        toast.error("Failed to create expense: " + (res.message || 'Unknown error'));
+      }
     } catch (error) {
-        toast.error("Failed to add expense: " + error.message);
+      toast.error("Failed to create expense: " + (error?.message || 'Unknown error'));
     }
   };
 
