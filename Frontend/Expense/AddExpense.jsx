@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiSave, FiUpload } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiUpload, FiCamera, FiX } from 'react-icons/fi';
 import { useSimpleExpense } from '../src/context/SimpleExpenseContext';
 import { toast } from 'react-toastify';
 
@@ -17,7 +17,12 @@ const AddExpense = () => {
     isRecurring: false,
     recurringFrequency: ''
   });
-  const { createExpense } = useSimpleExpense();
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
+  const [scannedReceipt, setScannedReceipt] = useState(null); 
+  const [isScanning, setIsScanning] = useState(false);
+  const fileInputRef = useRef(null);
+  const { createExpense, scanReceipt, uploadReceiptToExpense } = useSimpleExpense();
 
   const categories = [
     'Food & Drinking', 'Transportation', 'Shopping', 'Entertainment',
@@ -35,12 +40,97 @@ const AddExpense = () => {
     }));
   };
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setReceiptFile(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleScanReceipt = async () => {
+    if (!receiptFile) {
+      toast.error('Please select a receipt image first');
+      return;
+    }
+
+    setIsScanning(true);
+    try {
+      const result = await scanReceipt(receiptFile);
+      
+      if (result.success && result.data.expenseData) {
+        const extracted = result.data.expenseData;
+        
+        
+        if (result.data.receipt) {
+          setScannedReceipt(result.data.receipt);
+        }
+        
+        
+        setFormData(prev => ({
+          ...prev,
+          amount: extracted.amount || prev.amount,
+          category: extracted.category || prev.category,
+          subcategory: extracted.subcategory || prev.subcategory,
+          description: extracted.description || prev.description,
+          date: extracted.date || prev.date,
+          paymentMethod: extracted.paymentMethod || prev.paymentMethod,
+          tags: extracted.tags || prev.tags
+        }));
+
+        toast.success('Receipt scanned successfully! Form auto-filled.');
+      } else {
+        toast.error(result.message || 'Failed to scan receipt');
+      }
+    } catch (error) {
+      toast.error('Error scanning receipt: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleRemoveReceipt = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    setScannedReceipt(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await createExpense(formData);
+      let expenseDataToSubmit = { ...formData };
+      
+      
+      if (scannedReceipt) {
+        expenseDataToSubmit.receipt = scannedReceipt;
+      } else if (receiptFile) {
+       
+        toast.info("Receipt will be uploaded after expense is created");
+      }
+
+      const res = await createExpense(expenseDataToSubmit);
 
       if (res.success) {
+        
+        if (receiptFile && !scannedReceipt && res.data.newExpense?._id) {
+          try {
+            await uploadReceiptToExpense(res.data.newExpense._id, receiptFile);
+            toast.success("Receipt uploaded successfully!");
+          } catch (uploadError) {
+            console.error("Error uploading receipt:", uploadError);
+           
+            toast.warning("Expense created but receipt upload failed");
+          }
+        }
+        
         console.log("Added successfully");
         toast.success("Expense added successfully!");
         navigate('/expense-dashboard');
@@ -186,10 +276,57 @@ const AddExpense = () => {
             
             <div className="col-span-1 md:col-span-2">
               <label className="block font-black text-sm uppercase mb-2">Receipt</label>
-              <div className="border-4 border-black border-dashed bg-stone-50 p-6 text-center cursor-pointer hover:bg-yellow-50 transition-colors">
-                <FiUpload className="mx-auto text-3xl mb-2" />
-                <span className="font-bold text-sm uppercase">Click to upload receipt image</span>
-              </div>
+              
+              {!receiptPreview ? (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-4 border-black border-dashed bg-stone-50 p-6 text-center cursor-pointer hover:bg-yellow-50 transition-colors"
+                >
+                  <FiUpload className="mx-auto text-3xl mb-2" />
+                  <span className="font-bold text-sm uppercase">Click to upload receipt image</span>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                <div className="border-4 border-black bg-white p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="font-black text-sm uppercase">Receipt Preview</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleScanReceipt}
+                        disabled={isScanning}
+                        className="px-4 py-2 bg-blue-600 text-white font-bold uppercase text-xs border-2 border-black hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                      >
+                        <FiCamera className="text-sm" />
+                        {isScanning ? 'Scanning...' : 'Scan Receipt'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveReceipt}
+                        className="px-4 py-2 bg-red-600 text-white font-bold uppercase text-xs border-2 border-black hover:bg-red-700 transition-colors flex items-center gap-2"
+                      >
+                        <FiX className="text-sm" />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  <img 
+                    src={receiptPreview} 
+                    alt="Receipt preview" 
+                    className="max-w-full h-auto max-h-64 mx-auto border-2 border-black"
+                  />
+                </div>
+              )}
+              
+              <p className="mt-2 text-xs text-gray-600 font-bold">
+                💡 Tip: Upload a receipt and click "Scan Receipt" to auto-fill the form!
+              </p>
             </div>
 
            

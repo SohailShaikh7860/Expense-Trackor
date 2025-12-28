@@ -62,6 +62,44 @@ export const SimpleExpenseContextProvider = ({ children }) => {
         }
     }
 
+    const scanReceipt = async(file)=>{
+        setLoading(true)
+        try {
+            const formData = new FormData();
+            formData.append('receipt', file);
+            const response = await axios.post('/expense/scan-receipt', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return {success:true, data: response.data};
+        } catch (error) {
+            console.log("Error in scanning receipt", error);
+            return {success:false, message: error.response?.data?.message || 'Failed to scan receipt'};
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const uploadReceiptToExpense = async(expenseId, file)=>{
+        setLoading(true)
+        try {
+            const formData = new FormData();
+            formData.append('receipt', file);
+            const response = await axios.post(`/expense/${expenseId}/receipt`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return {success:true, data: response.data};
+        } catch (error) {
+            console.log("Error in uploading receipt", error);
+            return {success:false, message: error.response?.data?.message || 'Failed to upload receipt'};
+        } finally {
+            setLoading(false);
+        }
+    }
+
 
     // Budget related operations
     const AddBudget = async(budgetData)=>{
@@ -137,6 +175,8 @@ export const SimpleExpenseContextProvider = ({ children }) => {
         getAllSimpleExpenses,
         deleteExpense,
         updateExpense,
+        scanReceipt,
+        uploadReceiptToExpense,
         AddBudget,
         getBudget,
         getAllBudgets,

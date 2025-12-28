@@ -1,7 +1,8 @@
 import express from "express";
 import { body } from "express-validator";
 import { authToken } from "../middleware/auth.js";
-import { createExpense, getAllExpense, expenseById, deleteExpense, updateExpense, getExpenseStats } from "../controllers/expense.controllers.js";
+import { createExpense, getAllExpense, expenseById, deleteExpense, updateExpense, getExpenseStats, scanReceipt, uploadReceipt } from "../controllers/expense.controllers.js";
+import { uploadExpenseReceipt } from "../utils/cloudinary.js";
 
 const router = express.Router();
 
@@ -16,6 +17,8 @@ router.use(authToken);
 
 
 router.post('/', expenseValidation, createExpense);
+router.post('/scan-receipt', uploadExpenseReceipt.single('receipt'), scanReceipt);
+router.post('/:id/receipt', uploadExpenseReceipt.single('receipt'), uploadReceipt);
 router.get('/', getAllExpense);
 router.get('/statistics', getExpenseStats);
 router.get('/:id', expenseById);

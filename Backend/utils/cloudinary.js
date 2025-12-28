@@ -8,7 +8,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-const storage = new CloudinaryStorage({
+const tripStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'trip_images',
@@ -17,11 +17,27 @@ const storage = new CloudinaryStorage({
     }
 })
 
+const expenseReceiptStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'expense_receipts',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'pdf'],
+        transformation: [{ width: 2000, height: 2000, crop: 'limit' }]
+    }
+})
+
 const upload = multer({ 
-    storage: storage,
+    storage: tripStorage,
     limits:{
         fileSize: 5 * 1024 * 1024
     }
 });
 
-export {cloudinary, upload};
+const uploadExpenseReceipt = multer({ 
+    storage: expenseReceiptStorage,
+    limits:{
+        fileSize: 10 * 1024 * 1024 
+    }
+});
+
+export {cloudinary, upload, uploadExpenseReceipt};

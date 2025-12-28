@@ -1,5 +1,7 @@
 import Expense from "../model/expense.model.js";
 import { validationResult } from "express-validator";
+import { scanReceipt as scanReceiptImage } from "../service/OpenAi.js";
+import { cloudinary } from "../utils/cloudinary.js";
 
 const createExpense = async (req, res) => {
     const errors = validationResult(req);
@@ -181,11 +183,79 @@ const getExpenseStats = async (req, res) => {
     }
 }
 
+const scanReceipt = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No receipt image provided" });
+        }
+
+        const imageUrl = req.file.path;
+        
+        
+        const extractedData = await scanReceiptImage(imageUrl);
+        
+        return res.status(200).json({ 
+            success: true,
+            message: "Receipt scanned successfully",
+            expenseData: extractedData,
+            receipt: {
+                url: req.file.path,
+                publicId: req.file.filename
+            }
+        });
+    } catch (error) {
+        console.error("Scan receipt error:", error);
+        return res.status(500).json({ 
+            message: "Failed to scan receipt", 
+            error: error.message 
+        });
+    }
+};
+
+const uploadReceipt = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        const userId = req.user.id;
+        const expense = await Expense.findOne({ _id: id, userId });
+        
+        if (!expense) {
+           
+            await cloudinary.uploader.destroy(req.file.filename);
+            return res.status(404).json({ message: "Expense not found" });
+        }
+
+        expense.receipt = {
+            url: req.file.path,
+            publicId: req.file.filename
+        };
+        
+        await expense.save();
+        
+        return res.status(200).json({ 
+            message: "Receipt uploaded successfully", 
+            receipt: expense.receipt 
+        });
+    } catch (error) {
+        console.error("Upload receipt error:", error);
+        return res.status(500).json({ 
+            message: "Failed to upload receipt", 
+            error: error.message 
+        });
+    }
+};
+
 export {
     createExpense,
     getAllExpense,
     expenseById,
     deleteExpense,
     updateExpense,
-    getExpenseStats
+    getExpenseStats,
+    scanReceipt,
+    uploadReceipt
 }
