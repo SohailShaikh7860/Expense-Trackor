@@ -314,7 +314,7 @@ export const monthlyReportTemplate = ({ userName, month, year, analysis, stats, 
 
       <div class="cta-box">
         <p>Want to see more details?</p>
-        <a href="${process.env.FRONTEND}/expense-dashboard" class="button">
+        <a href="${process.env.FRONTEND}" class="button">
           View Dashboard
         </a>
       </div>

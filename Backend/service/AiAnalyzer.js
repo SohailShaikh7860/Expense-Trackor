@@ -113,45 +113,60 @@ export const analyzeTransportExpenses = async (trips, month, year, userName) => 
       };
     }
 
-    // Prepare trip data
-    const tripsData = trips.map(trip => ({
-      vehicleNumber: trip.Vehicle_Number,
-      route: trip.route,
-      tripDate: trip.tripDate,
-      totalIncome: trip.totalIncome,
-      fuelCost: trip.fuelCost,
-      driverSalary: trip.driverAllowance?.totalSalary || 0,
-      driverBonus: trip.driverAllowance?.bonus || 0,
-      driverPaid: trip.driverAllowance?.paid || 0,
-      hamaali: trip.hamaali,
-      paidTransport: trip.paidTransport,
-      toll: trip.toll,
-      maintenanceAndRepair: trip.maintenanceAndRepair,
-      miscellaneous: trip.miscellaneous,
-      totalExpenses: trip.Total_Expenses,
-      netProfit: trip.netProfit
-    }));
+    // Prepare trip data with calculated fields
+    const tripsData = trips.map(trip => {
+      const totalExpenses = 
+        (trip.fuelCost || 0) +
+        (trip.hamaali || 0) +
+        (trip.maintenanceCost || 0) +
+        (trip.otherExpenses || 0) +
+        (trip.commission || 0) +
+        (trip.driverAllowance?.paid || 0) +
+        (trip.paidTransport || 0) +
+        (trip.phonePai || 0);
+      
+      const netProfit = (trip.totalIncome || 0) - totalExpenses;
+      
+      return {
+        vehicleNumber: trip.Vehicle_Number,
+        route: trip.route,
+        tripDate: trip.tripDate,
+        totalIncome: trip.totalIncome || 0,
+        fuelCost: trip.fuelCost || 0,
+        driverSalary: trip.driverAllowance?.totalSalary || 0,
+        driverBonus: trip.driverAllowance?.bonus || 0,
+        driverPaid: trip.driverAllowance?.paid || 0,
+        hamaali: trip.hamaali || 0,
+        paidTransport: trip.paidTransport || 0,
+        maintenanceCost: trip.maintenanceCost || 0,
+        otherExpenses: trip.otherExpenses || 0,
+        commission: trip.commission || 0,
+        phonePai: trip.phonePai || 0,
+        totalExpenses,
+        netProfit
+      };
+    });
 
     // Calculate totals
-    const totalIncome = trips.reduce((sum, trip) => sum + trip.totalIncome, 0);
-    const totalExpenses = trips.reduce((sum, trip) => sum + trip.Total_Expenses, 0);
-    const totalProfit = trips.reduce((sum, trip) => sum + trip.netProfit, 0);
-    const totalFuel = trips.reduce((sum, trip) => sum + trip.fuelCost, 0);
-    const totalMaintenance = trips.reduce((sum, trip) => sum + trip.maintenanceAndRepair, 0);
+    const totalIncome = tripsData.reduce((sum, trip) => sum + trip.totalIncome, 0);
+    const totalExpenses = tripsData.reduce((sum, trip) => sum + trip.totalExpenses, 0);
+    const totalProfit = tripsData.reduce((sum, trip) => sum + trip.netProfit, 0);
+    const totalFuel = tripsData.reduce((sum, trip) => sum + trip.fuelCost, 0);
+    const totalMaintenance = tripsData.reduce((sum, trip) => sum + trip.maintenanceCost, 0);
     
     // Route analysis
     const routeStats = {};
-    trips.forEach(trip => {
+    tripsData.forEach(trip => {
       if (!routeStats[trip.route]) {
         routeStats[trip.route] = { count: 0, income: 0, expenses: 0, profit: 0 };
       }
       routeStats[trip.route].count++;
       routeStats[trip.route].income += trip.totalIncome;
-      routeStats[trip.route].expenses += trip.Total_Expenses;
+      routeStats[trip.route].expenses += trip.totalExpenses;
       routeStats[trip.route].profit += trip.netProfit;
     });
 
-    const profitMargin = ((totalProfit / totalIncome) * 100).toFixed(2);
+    const profitMargin = totalIncome > 0 ? ((totalProfit / totalIncome) * 100).toFixed(2) : '0.00';
 
     const prompt = `You are a transport business consultant analyzing monthly performance for ${userName}'s transport business.
 
@@ -165,8 +180,8 @@ export const analyzeTransportExpenses = async (trips, month, year, userName) => 
 - Number of Trips: ${trips.length}
 
 **EXPENSE BREAKDOWN:**
-- Fuel Costs: ₹${totalFuel.toLocaleString()} (${Math.round((totalFuel / totalExpenses) * 100)}%)
-- Maintenance: ₹${totalMaintenance.toLocaleString()} (${Math.round((totalMaintenance / totalExpenses) * 100)}%)
+- Fuel Costs: ₹${totalFuel.toLocaleString()} (${totalExpenses > 0 ? Math.round((totalFuel / totalExpenses) * 100) : 0}%)
+- Maintenance: ₹${totalMaintenance.toLocaleString()} (${totalExpenses > 0 ? Math.round((totalMaintenance / totalExpenses) * 100) : 0}%)
 
 **ROUTE PERFORMANCE:**
 ${Object.entries(routeStats)
@@ -204,7 +219,7 @@ ${JSON.stringify(tripsData, null, 2)}
 Please provide a detailed, professional business analysis suitable for an email report. Use clear sections with headings. Be specific with numbers, percentages, and ROI. Focus on actionable business insights.`;
 
     const response = await client.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -215,7 +230,7 @@ Please provide a detailed, professional business analysis suitable for an email 
           content: prompt
         }
       ],
-      max_tokens: 2000,
+      max_tokens: 1500,
       temperature: 0.7,
     });
 
